@@ -1,19 +1,29 @@
 const express = require("express");
-const mysql = require("mysql2");
-const router = express.Router();
+require("../backend/database");
+
 const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT || 3001;
-
 app.use(express.json());
 app.use(cors());
 
-app.get("/", (req, res) => {
-  return res.status(201).json({ Message: "success " });
+const productRoutes = require("../backend/routes/productRoutes");
+
+app.use("/product", productRoutes);
+
+// to handle the thrown errors in my controllers
+app.use((error, req, res, next) => {
+  const status = error.statusCode || 500;
+  const message = error.message;
+  const data = error.data;
+
+  res.status(status).json({
+      message: message,
+      data: data,
+  });
 });
 
-app.listen(port, () => {
-  console.log("connected!");
+app.listen(process.env.PORT, () => {
+  console.log("server is running!");
 });
