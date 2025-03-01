@@ -9,30 +9,31 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 app.use(cors());
+const httpServer = createServer(app);
 
 const productRoutes = require("../backend/routes/productRoutes");
 
 app.use("/product", productRoutes);
 
-// initialize my webscoket connection to my react app URL
-const httpServer = createServer(app);
+// creating web socket server
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
 
+//websocket init logic + emitting and receiving signals
 io.on("connection", (socket) => {
   console.log("A user connected!");
 
   socket.on("message", (data) => {
     console.log("Message received", data);
-    io.emit("mesasge", data);
+    io.emit("message", data);
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
   });
 });
 
@@ -48,6 +49,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-app.listen(process.env.PORT, () => {
-  console.log("server is running!");
+// Use httpServer.listen instead of app.listen
+httpServer.listen(process.env.PORT, () => {
+  console.log(`Server is running on port ${process.env.PORT}!`);
 });
